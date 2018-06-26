@@ -5,8 +5,21 @@ module.exports = {
     user(root, { id }, ctx) {
       return ctx.connector.user.fetchById(id);
     },
-    tags(root, params, ctx) {
-      return ctx.connector.tag.fetchRecommandation();
+
+    users(root, params, ctx) {
+      // console.log(root);
+      return ctx.connector.user.fetchMe();
+    },
+    me(root, { id }, ctx) {
+      return ctx.connector.user.fetchMe();
+    },
+  },
+  Mutation: {
+    createUser(root, params, ctx) {
+      return ctx.connector.user.create(params);
+    },
+    updateUser(root, params, ctx) {
+      return ctx.connector.user.update(params);
     },
   },
 };

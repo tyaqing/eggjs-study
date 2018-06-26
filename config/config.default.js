@@ -22,7 +22,7 @@ module.exports = appInfo => {
   config.sequelize = {
     dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
     database: 'www_femirror_co',
-    host: 'localhost',
+    host: '120.78.52.232',
     port: '3306',
     username: 'www_femirror_co',
     password: 'yA2T3wXNprf7DeH6',

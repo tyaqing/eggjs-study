@@ -2,7 +2,11 @@
 
 type Mutation {
 
+  #User
+  createUser (name:String!,password:String!):User
+  updateUser (id:ID!,name:String,password:String):User
   # Item
+  # 创建一个Item
   createItem (userID: ID!, content: String!, expire: Date): Item
   updateItem (id: ID!, content: String, expire: Date, done: Boolean): Item
   deleteItem (id: ID!): Item 

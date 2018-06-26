@@ -1,7 +1,7 @@
 'use strict';
 
 const DataLoader = require('dataloader');
-
+const _ = require('lodash');
 class UserConnector {
   constructor(ctx) {
     this.ctx = ctx;
@@ -25,6 +25,24 @@ class UserConnector {
 
   fetchById(id) {
     return this.loader.load(id);
+  }
+
+  fetchMe() {
+    const users = this.ctx.app.model.User.findAll({
+      where: {},
+    }).then(us => us.map(u => u.toJSON()));
+    return users;
+  }
+  // 创建用户
+  async create(params) {
+    return await this.ctx.app.model.User.create(params);
+  }
+  // 更新用户
+  async update(params) {
+    const { id } = params;
+    await this.ctx.app.model.User.update(_.pickBy(params), { where: { id } });
+    const item = await this.ctx.app.model.User.findOne({ where: { id } });
+    return item.toJSON();
   }
 }
 

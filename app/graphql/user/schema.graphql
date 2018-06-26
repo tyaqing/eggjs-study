@@ -1,8 +1,9 @@
 
-
+# 用户类型
 type User {
   id: ID!
   name: String!
   items: [Item!]
+  created_at:Date
 }
 

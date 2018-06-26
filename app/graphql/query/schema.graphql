@@ -1,5 +1,7 @@
 
 type Query {
   user(id: ID!): User
+  users:[User!]
   tags: [String!]
+  me: User
 }
