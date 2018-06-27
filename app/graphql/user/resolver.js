@@ -21,5 +21,10 @@ module.exports = {
     updateUser(root, params, ctx) {
       return ctx.connector.user.update(params);
     },
+    UserRegister(root, params, ctx) {
+      console.log(ctx.connector.user)
+      return {id:1,
+        ...params};
+    },
   },
 };

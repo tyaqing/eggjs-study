@@ -2,9 +2,9 @@
 
 module.exports = {
   User: {
-    items(root, _, ctx) {
-      return ctx.connector.item.fetchByUserId(root.id);
-    },
+    // items(root, _, ctx) {
+    //   return ctx.connector.item.fetchByUserId(root.id);
+    // },
   },
   Mutation: {
     createItem(root, {
