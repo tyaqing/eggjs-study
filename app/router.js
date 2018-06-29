@@ -21,6 +21,7 @@ module.exports = app => {
   // 获取登陆状态
   router.get('/login_status', checkLogin, controller.public.login_status);
 
+  router.post('/jsonql', controller.public.jsonql);
 
   // 链接
   // router.resources('link','/link',controller.link)

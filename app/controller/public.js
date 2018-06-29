@@ -2,6 +2,7 @@
 const Controller = require('egg').Controller;
 const crypto = require('crypto');
 const moment = require('moment');
+const validate = require('validate.js');
 
 class Public extends Controller {
   // 注册用户
@@ -28,14 +29,37 @@ class Public extends Controller {
     const { ctx } = this;
 
     const body = ctx.request.only([ 'username', 'password' ]);
-    ctx.validate({
-      username: { type: 'string' },
-      password: { type: 'string' },
-    });
+    console.log(ctx.header);
+
+    const constraints = {
+      username: {
+        presence: {
+          message: '嘿嘿',
+        },
+        exclusion: {
+          within: [ 'nicklas' ],
+          message: "'%{value}' 是不允许的",
+        },
+      },
+      password: {
+        presence: true,
+        length: {
+          minimum: 6,
+          message: '要大于6个字符',
+        },
+      },
+    };
+
+    const res = validate({ password: 'bad' }, constraints);
+    if (res) {
+      ctx.body = res;
+      return;
+    }
+
     const user = await ctx.model.User.findOne({ where: { username: body.username } });
     if (!user) ctx.throw(404, '用户不存在');
     // 检查密码
-    if (user.password != body.password) ctx.throw(404, '密码错误或账号不存在');
+    if (user.password !== body.password) ctx.throw(404, '密码错误或账号不存在');
     // 登陆成功
     ctx.login(user);
     ctx.body = { message: '登陆成功' };
@@ -83,6 +107,11 @@ class Public extends Controller {
     ctx.body = result;
   }
 
+  async jsonql() {
+    const { ctx } = this;
+    const body = ctx.request.only([ 'username', 'password' ]);
+    ctx.body = body;
+  }
 
 }
 

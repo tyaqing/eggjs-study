@@ -49,6 +49,19 @@ module.exports = appInfo => {
     origin: '*',
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
   };
+  config.io = {
+    init: { }, // passed to engine.io
+    namespace: {
+      '/': {
+        connectionMiddleware: [],
+        packetMiddleware: [],
+      },
+      '/example': {
+        connectionMiddleware: [],
+        packetMiddleware: [],
+      },
+    },
+  };
 
 
   return config;

@@ -31,8 +31,10 @@ module.exports = {
       }
     
       ctx.app.model.User.register(params)
-      return {id:1,
-        ...params};
+      return {
+        id:1,
+        ...params
+      };
     },
   },
 };
