@@ -22,7 +22,15 @@ module.exports = {
       return ctx.connector.user.update(params);
     },
     UserRegister(root, params, ctx) {
-      console.log(ctx.connector.user)
+      try{
+        ctx.validate({
+          url: { type: 'url' },
+        }, params);
+      }catch(e){
+        throw new Error('Unavailable in your country.');
+      }
+    
+      ctx.app.model.User.register(params)
       return {id:1,
         ...params};
     },

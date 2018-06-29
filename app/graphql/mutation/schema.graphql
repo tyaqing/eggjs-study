@@ -7,7 +7,7 @@ type Mutation {
   updateUser (id:ID!,name:String,password:String):User
 
   UserLogin (name:String,password:String!):User
-  UserRegister (email:String,phone:String,password:String!):User
+  UserRegister (phone:String,password:String!):User
   # Item
   # 创建一个Item
   createItem (userID: ID!, content: String!, expire: Date): Item

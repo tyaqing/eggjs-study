@@ -24,6 +24,7 @@ module.exports = app => {
   };
 
   User.register = params => {
+    console.log(app);
     return params;
   };
 
