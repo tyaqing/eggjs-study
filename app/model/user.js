@@ -23,9 +23,13 @@ module.exports = app => {
     return params;
   };
 
-  User.register = params => {
-    console.log(app);
-    return params;
+  User.register = async body => {
+    console.log(body);
+    const { phone, password } = body;
+    const res = await User.create({
+      phone, password,
+    });
+    return res;
   };
 
   return User;

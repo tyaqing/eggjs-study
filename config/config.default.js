@@ -43,6 +43,13 @@ module.exports = appInfo => {
     * onPreGraphiQL(ctx) {
       console.log(ctx);
     },
+    formatError: (error, ctx) => ({
+      message: error.message,
+      locations: error.locations,
+      stack: error.stack,
+      etra: '123',
+      path: error.path,
+    }),
   };
 
   config.cors = {

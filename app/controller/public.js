@@ -107,12 +107,78 @@ class Public extends Controller {
     ctx.body = result;
   }
 
-  async jsonql() {
+  async query(rep) {
     const { ctx } = this;
-    const body = ctx.request.only([ 'username', 'password' ]);
-    ctx.body = body;
+    // console.log(rep);
+    const { model, values } = rep;
+    let { offset = 0, limit = 10, page = 1, order = [[ 'id', 'DESC' ]] } = values;
+    if (page > 1) {
+      offset = limit * (page - 1);
+    }
+    const data = await ctx.model[model].findAndCountAll({
+      // where: values.where,
+      offset,
+      limit,
+      order,
+    });
+    const addOne = (data.count % limit) > 0 ? 1 : 0;
+    data.total_page = parseInt(data.count / limit) + addOne;
+    data.current_page = page;
+    return data;
   }
 
+  async mutation(rep) {
+    const { ctx } = this;
+    // console.log(rep);
+    const { model, method, values } = rep;
+    return await ctx.model[model][method](values);
+  }
+
+  async jsonql() {
+    const { ctx } = this;
+    const { body } = ctx.request;
+    // 解析mutation
+    const res = {};
+    const repObj = this.repParse(body);
+    // 遍历query和mutation
+    for (let i = 0; i < repObj.length; i++) {
+      if (repObj[i].type === 'mutation') res[repObj[i].name] = await this.mutation(repObj[i]);
+      else res[repObj[i].name] = await this.query(repObj[i]);
+    }
+    ctx.body = res;
+  }
+
+  repParse(body) {
+    const resObj = [];
+    for (const rep in body) {
+      // 匹配mutation
+      const mutation = rep.match(/^([A-Za-z]+)\:([A-Za-z]+)\(([A-Za-z]+)\.([A-Za-z]+)\)$/);
+      // 匹配query
+      const query = rep.match(/^([A-Za-z]+)\:([A-Za-z]+)\(([A-Za-z]+)\)$/);
+      if (mutation) {
+        resObj.push({
+          name: mutation[1],
+          type: 'mutation',
+          model: mutation[3],
+          method: mutation[4],
+          values: body[rep],
+        });
+      } else if (query) {
+        resObj.push({
+          name: query[1],
+          type: 'query',
+          model: query[3],
+          values: body[rep],
+        });
+      } else {
+        this.ctx.throw(404, { message: '查询语法错误', detail: `${rep} 语法错误` });
+      }
+    }
+    return resObj;
+  }
+
+
 }
+
 
 module.exports = Public;
