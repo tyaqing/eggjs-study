@@ -111,12 +111,17 @@ class Public extends Controller {
     const { ctx } = this;
     // console.log(rep);
     const { model, values } = rep;
-    let { offset = 0, limit = 10, page = 1, order = [[ 'id', 'DESC' ]] } = values;
+    let { offset = 0, limit = 10, field, page = 1, order = [[ 'id', 'DESC' ]] } = values;
     if (page > 1) {
       offset = limit * (page - 1);
     }
+
+    // 处理attr
+    const attributes = field.split(',');
+
     const data = await ctx.model[model].findAndCountAll({
       // where: values.where,
+      attributes,
       offset,
       limit,
       order,
@@ -127,13 +132,26 @@ class Public extends Controller {
     return data;
   }
 
+  async queryOne(rep) {
+    const { ctx } = this;
+    const { model, values, query } = rep;
+    const { field } = values;
+    const attributes = field.split(',');
+    return await ctx.model[model].findOne({
+      where: query,
+      attributes,
+
+    });
+  }
+
   async mutation(rep) {
     const { ctx } = this;
     // console.log(rep);
     const { model, method, values } = rep;
     return await ctx.model[model][method](values);
   }
-
+  // 主接口
+  // TODO 上传
   async jsonql() {
     const { ctx } = this;
     const { body } = ctx.request;
@@ -141,33 +159,46 @@ class Public extends Controller {
     const res = {};
     const repObj = this.repParse(body);
     // 遍历query和mutation
-    for (let i = 0; i < repObj.length; i++) {
-      if (repObj[i].type === 'mutation') res[repObj[i].name] = await this.mutation(repObj[i]);
-      else res[repObj[i].name] = await this.query(repObj[i]);
+    for (const rep of repObj) {
+      console.log(rep);
+      if (rep.type === 'mutation') res[rep.name] = await this.mutation(rep);
+      else {
+        if (rep.method === 'findOne') res[rep.name] = await this.queryOne(rep);
+        else if (rep.method === 'findAll') res[rep.name] = await this.query(rep);
+        else {
+          // 统计么
+        }
+      }
+
     }
     ctx.body = res;
   }
 
+  // 请求解析
   repParse(body) {
     const resObj = [];
     for (const rep in body) {
-      // 匹配mutation
-      const mutation = rep.match(/^([A-Za-z]+)\:([A-Za-z]+)\(([A-Za-z]+)\.([A-Za-z]+)\)$/);
-      // 匹配query
-      const query = rep.match(/^([A-Za-z]+)\:([A-Za-z]+)\(([A-Za-z]+)\)$/);
-      if (mutation) {
-        resObj.push({
-          name: mutation[1],
-          type: 'mutation',
-          model: mutation[3],
-          method: mutation[4],
-          values: body[rep],
+      // 匹配表达式
+      const result = rep.match(/^([A-Za-z]+)\:(mutation|query{1})\s{1}([A-Za-z]+)\.([A-Za-z]+)\(([\S]*)\)$/);
+      // 解析query page=1,limit=2
+      const query = {};
+      if (result[5]) {
+        const queryArr = result[5].split(',');
+        queryArr.length && queryArr.forEach(q => {
+          console.log(q);
+          const kv = q.match(/([^\=]+)\={1}([^\=]+)$/);
+          if (kv.length < 3) this.ctx.throw(404, { message: '查询语法错误', detail: `${q} 语法错误` });
+          query[kv[1]] = kv[2];
         });
-      } else if (query) {
+      }
+
+      if (result) {
         resObj.push({
-          name: query[1],
-          type: 'query',
-          model: query[3],
+          name: result[1],
+          type: result[2],
+          model: result[3],
+          method: result[4],
+          query,
           values: body[rep],
         });
       } else {
@@ -176,9 +207,5 @@ class Public extends Controller {
     }
     return resObj;
   }
-
-
 }
-
-
 module.exports = Public;

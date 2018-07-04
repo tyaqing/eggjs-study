@@ -1,33 +1,40 @@
-# fav
+# 学习日志
 
-fast
+## jsonql的规范
 
-## QuickStart
-
-<!-- add docs here for user -->
-
-see [egg docs][egg] for more detail.
-
-### Development
-
-```bash
-$ npm i
-$ npm run dev
-$ open http://localhost:7001/
+拓展了json的用法主要构成如下
 ```
-
-### Deploy
-
-```bash
-$ npm start
-$ npm stop
+别名:类型 模型.方法(查询):{
+  数据
+}
 ```
-
-### npm scripts
-
-- Use `npm run lint` to check code style.
-- Use `npm test` to run unit test.
-- Use `npm run autod` to auto detect dependencies upgrade, see [autod](https://www.npmjs.com/package/autod) for more detail.
-
-
-[egg]: https://eggjs.org
+一个比较正经的查询语法如下:
+```json
+{
+  // 注册
+	"register:mutation User.register()":{  
+		"phone":"13200001231",
+		"password":"aalskdj"
+  },
+  // 查询用户列表
+	"data:query User.findAll(page=1,limit=2,order=byRank)":{
+		"field":"id,phone",
+		"where":{
+			"id":12,
+			"username":"arh"
+    },
+    "order":{},
+		"page":"asd",
+		"limit":5,
+		"link:query(Link)":{
+			"field":"name,link",
+			"page":1,
+			"row":10
+		}
+  },
+  // 查询某个用户
+	"my:query User.findOne(id=1)":{
+		"field":"id,username"
+	}
+}
+```
