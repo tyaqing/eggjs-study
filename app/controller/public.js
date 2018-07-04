@@ -3,81 +3,8 @@ const Controller = require('egg').Controller;
 const crypto = require('crypto');
 const moment = require('moment');
 const validate = require('validate.js');
-
+const qiniu = require('../public/qiniu');
 class Public extends Controller {
-  // 注册用户
-  async register() {
-    const { ctx } = this;
-    // 过滤数据
-    const body = ctx.request.only([ 'username', 'email', 'password' ]);
-    // 验证数据
-    ctx.validate({
-      username: { type: 'string', min: 6 },
-      password: { type: 'string', min: 6 },
-    });
-    // 数据库查重
-    let res = await ctx.model.User.findOne({ where: { username: body.username } });
-    if (res) {
-      ctx.throw(404, '该用户名已被注册');
-    }
-    res = await ctx.model.User.create(body);
-    // console.log(ctx.request.only([2]));
-    ctx.body = res;
-  }
-  // 登陆
-  async login() {
-    const { ctx } = this;
-
-    const body = ctx.request.only([ 'username', 'password' ]);
-    console.log(ctx.header);
-
-    const constraints = {
-      username: {
-        presence: {
-          message: '嘿嘿',
-        },
-        exclusion: {
-          within: [ 'nicklas' ],
-          message: "'%{value}' 是不允许的",
-        },
-      },
-      password: {
-        presence: true,
-        length: {
-          minimum: 6,
-          message: '要大于6个字符',
-        },
-      },
-    };
-
-    const res = validate({ password: 'bad' }, constraints);
-    if (res) {
-      ctx.body = res;
-      return;
-    }
-
-    const user = await ctx.model.User.findOne({ where: { username: body.username } });
-    if (!user) ctx.throw(404, '用户不存在');
-    // 检查密码
-    if (user.password !== body.password) ctx.throw(404, '密码错误或账号不存在');
-    // 登陆成功
-    ctx.login(user);
-    ctx.body = { message: '登陆成功' };
-  }
-
-  // 查看登陆状态
-  async login_status() {
-    const { ctx } = this;
-    ctx.body = ctx.user;
-  }
-  // 退出登录
-  async login_out() {
-    const { ctx } = this;
-    ctx.logout();
-    ctx.body = {
-      message: '退出成功',
-    };
-  }
 
   // 发送验证码
   async send_sms($to, datas) {
@@ -148,13 +75,44 @@ class Public extends Controller {
     const { ctx } = this;
     // console.log(rep);
     const { model, method, values } = rep;
-    return await ctx.model[model][method](values);
+    // 判断方法存在
+    const func = ctx.model[model][method];
+    if (!func) throw { status: 404, error: `${method}方法未找到` };
+    return await func(values);
+  }
+
+  async upload() {
+
+    const { ctx } = this;
+    const stream = await ctx.getFileStream();
+    console.log(stream);
+    const uploadResult = await qiniu(stream);
+    // 上传到数据库
+    ctx.model.Attachment.create({
+
+    });
+    return uploadResult;
+
   }
   // 主接口
   // TODO 上传
   async jsonql() {
     const { ctx } = this;
-    const { body } = ctx.request;
+    const { body, header } = ctx.request;
+
+    // 区别文件上传和数据
+    const isUpload = /^multipart\/form-data\;/.test(header['content-type']);
+    if (isUpload) {
+      const uploadResult = await this.upload();
+      ctx.body = uploadResult;
+      return;
+    }
+    // console.log(ctx.request);
+
+    // console.log(stream);
+    // console.log(uploadResult);
+    // ctx.body = uploadResult;
+    return;
     // 解析mutation
     const res = {};
     const repObj = this.repParse(body);
@@ -169,7 +127,6 @@ class Public extends Controller {
           // 统计么
         }
       }
-
     }
     ctx.body = res;
   }

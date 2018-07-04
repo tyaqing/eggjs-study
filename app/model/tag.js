@@ -1,4 +1,5 @@
-module.exports = (app) => {
+
+module.exports = app => {
   const { STRING, INTEGER } = app.Sequelize;
   const Tag = app.model.define('tag', {
     item_id: INTEGER,

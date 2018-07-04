@@ -10,17 +10,6 @@ module.exports = app => {
   // 检测登陆中间件
   const checkLogin = app.middleware.checkLogin();
 
-  // 注册
-  router.post('/register', controller.public.register);
-  // 发送验证码
-  // router.post('/send_sms',controller.public.send_sms);
-  // 退出登陆
-  router.get('/login_out', controller.public.login_out);
-  // 登陆
-  router.post('/login', controller.public.login);
-  // 获取登陆状态
-  router.get('/login_status', checkLogin, controller.public.login_status);
-
   router.post('/jsonql', controller.public.jsonql);
 
   // 链接
