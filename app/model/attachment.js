@@ -7,7 +7,7 @@ module.exports = app => {
   });
 
   // 关联
-  Attachment.belongsTo(app.model.User);
+  // Attachment.belongsTo(app.model.User);
 
   return Attachment;
 };

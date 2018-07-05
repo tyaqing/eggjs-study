@@ -1,8 +1,6 @@
 'use strict';
-
 const md5 = require('../public/md5');
-const jwt = require('jsonwebtoken');
-
+const { sign, verify } = require('../public/jwt');
 module.exports = app => {
   const { STRING, INTEGER } = app.Sequelize;
 
@@ -35,21 +33,22 @@ module.exports = app => {
     // 生成token
     user = user.toJSON();
     delete user.password;
-    const token = jwt.sign(user, 'shhhhh');
+    delete user.phone;
+    const token = sign(user);
     user.token = token;
     // console.log('token', user);
     return user;
   };
 
   User.verify = async body => {
+    const { ctx } = this;
     const { token } = body;
     // 验证
-    const decoded = jwt.verify(token, 'shhhhh');
+    const decoded = verify(token);
     return decoded;
   };
 
   User.register = async body => {
-    console.log(body);
     let { phone, password } = body;
     // 查重
     const user = await User.findOne({ where: { phone }, attributes: [ 'phone' ] });

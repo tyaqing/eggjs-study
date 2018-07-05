@@ -18,6 +18,7 @@ module.exports = app => {
   router.get('/link/new', checkLogin, controller.link.new);
   // router.post('/link/new',controller.link.new);
 
+  router.post('/user', controller.user.register);
   // 收藏链接
   // router.get('/link/new',checkLogin,controller.link.new);
 

@@ -112,7 +112,7 @@ class Public extends Controller {
     // console.log(stream);
     // console.log(uploadResult);
     // ctx.body = uploadResult;
-    return;
+
     // 解析mutation
     const res = {};
     const repObj = this.repParse(body);
